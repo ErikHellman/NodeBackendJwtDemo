@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var chatRouter = require('./lib/chat');
+var loginRouter = require('./lib/login');
 
 var app = express();
 
@@ -16,5 +17,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/chat', chatRouter);
+app.use('/login', loginRouter);
 
 module.exports = app;

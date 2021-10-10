@@ -1,54 +1,53 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import SignIn from './SignIn'
-import Chat from './Chat'
+import SignIn from './SignIn';
+import Chat from './Chat';
+import Api from './api';
 
 const theme = createTheme();
+const api = new Api();
 
 export default function App() {
-  const [user, setUser] = React.useState(undefined);
+  const [loggedIn, setLoggedIn] = React.useState(api.authToken != null);
 
-  const handleSubmit = (event) => {
+  const login = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    const userData = {
-      email: data.get('email'),
-      password: data.get('password'),
-    };
-    console.log(userData);
-    setUser(userData.email);
+    const userName = data.get('email');
+    const password = data.get('password');
+
+    const result = await api.login(userName, password);
+    setLoggedIn(result);
+    console.error('Login', result);
   };
 
-  let content = <SignIn handleSubmit={handleSubmit} />
-  if (user) {
-    content = <Chat />
-/*     content = (
-      <Box sx={{
-        marginTop: 8,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-      >
-        <Typography component="h1" variant="h5">
-          Welcome {user}
-        </Typography>
-      </Box>
-    );
- */  }
+  const loadMessages = async () => {
+    const response = await api.fetchMessages();
+    if (response.error) {
+      if (response.error.status >= 400 || response.error.status < 500) {
+        setLoggedIn(false);
+      }
+      return [];
+    } else {
+      return response;
+    }
+  }
+
+  const sendMessage = async (message) => {
+    const status = await api.sendMessage(message);
+    console.log('Message sent:', status);
+    if (status >= 400 && status < 500) {
+      setLoggedIn(false);
+    }
+    return status === 200;
+  }
+
+  let content = <SignIn onLogin={login} />
+  if (loggedIn) {
+    content = <Chat onReload={loadMessages} onSend={sendMessage} />
+  }
 
   return (
     <ThemeProvider theme={theme}>

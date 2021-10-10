@@ -1,52 +1,31 @@
 import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 
-const buildMessageList = (messages) => {
-    return messages.map((message) => {
-        return <ListItemText key={message._id} primary={message.content} />
-    });
-}
-
-
-export default (props) => {
+const Chat = (props) => {
     const [messages, setMessages] = React.useState([])
     const [outMessage, setOutMessage] = React.useState('');
-
-    const fetchMessages = async () => {
-        const response = await fetch('http://localhost:3000/chat/');
-        setMessages(await response.json());
-    }
+    const onReload = props.onReload;
+    const onSend = props.onSend;
 
     const sendMessage = async (text) => {
-        const message = {
-            content: text,
-            author: 'Erik'
+        if (await onSend(text)) {
+            console.log('Successfully sent message!')
+            const messages = await onReload();
+            console.log('Got messages:', messages);
+            setMessages(messages);
         }
-        const response = await fetch('http://localhost:3000/chat/',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(message)
-            }
-        );
-        console.log('New message:', await response.json());
-        setOutMessage('');
-        await fetchMessages();
     }
 
     React.useEffect(() => {
-        fetchMessages();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        props.onReload().then((messages) => setMessages(messages));
+    }, [props]);
 
     return (
         <Box
@@ -58,7 +37,7 @@ export default (props) => {
         >
             <CssBaseline />
             <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
-                <Button variant="container" onClick={fetchMessages}>Reload</Button>
+                <Button variant="container" onClick={props.onReload}>Reload</Button>
                 <List>
                     {
                         messages.map((message) => {
@@ -88,3 +67,5 @@ export default (props) => {
     );
 
 }
+
+export default Chat
