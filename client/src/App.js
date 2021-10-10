@@ -20,17 +20,16 @@ export default function App() {
 
     const result = await api.login(userName, password);
     setLoggedIn(result);
-    console.error('Login', result);
   };
 
   const loadMessages = async () => {
     const response = await api.fetchMessages();
     if (response.error) {
-      if (response.error.status >= 400 || response.error.status < 500) {
-        setLoggedIn(false);
-      }
+      console.log('Error loading messages:', response);
+      setLoggedIn(false);
       return [];
     } else {
+      console.log('Successfully loaded messages:', response);
       return response;
     }
   }

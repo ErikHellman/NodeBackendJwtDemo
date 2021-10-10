@@ -1,19 +1,20 @@
 import axios from 'axios'
-import jwtDecode from "jwt-decode";
+import jwtDecode from 'jwt-decode';
 
 export default class Api {
     constructor() {
         this.baseURL = process.env.BASE_URL || 'http://localhost:3000';
         axios.defaults.baseURL = this.baseURL;
         this.authToken = window.localStorage.getItem('authToken');
+        this.user = undefined;
 
         if (this.authToken) {
             this.user = jwtDecode(this.authToken);
+            console.log('decoded token', this.user);
         }
 
         axios.interceptors.request.use((config) => {
             if (this.authToken) {
-                console.log('Run auth interceptor:', this.authToken);
                 config.headers = { 'X-Auth-Token': this.authToken }
             }
             return config;
@@ -30,7 +31,7 @@ export default class Api {
                 return true;
             } else {
                 return false;
-            }    
+            }
         } catch (error) {
             console.error('Error logging in,', error);
             return false;
@@ -38,16 +39,28 @@ export default class Api {
     }
 
     async sendMessage(content) {
-        const response = await axios.post('/chat', { content, author: this.user.userName });
-        return response.status;
+        let status = 200;
+        try {
+            const response = await axios.post('/chat', { content, author: this.user.userName });
+            status = response.status;
+        } catch (e) {
+            window.localStorage.removeItem('authToken');
+            this.authToken = null;
+            status = e.response.status;
+        }
+        return status;
     }
 
     async fetchMessages() {
-        const response = await axios.get('/chat');
-        if (response.status === 200) {
+        try {
+            const response = await axios.get('/chat')
             return response.data;
-        } else {
-            return { 'error': response.status };
+        } catch (e) {
+            window.localStorage.removeItem('authToken');
+            this.authToken = null;
+            return { error: e.response.statusText, status: e.response.status };
         }
     }
+
+    validToken() { return jwtDecode(this.authToken); }
 }

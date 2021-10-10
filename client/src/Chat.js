@@ -23,8 +23,10 @@ const Chat = (props) => {
     }
 
     React.useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        props.onReload().then((messages) => setMessages(messages));
+        let cancelled = false;
+        props.onReload().then((messages) => { if (!cancelled) { setMessages(messages); } });
+        const refresh = setInterval(() => props.onReload().then((messages) => { if (!cancelled) { setMessages(messages); } }), 5000); 
+        return () => { cancelled = true; clearInterval(refresh); }
     }, [props]);
 
     return (
@@ -37,11 +39,11 @@ const Chat = (props) => {
         >
             <CssBaseline />
             <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
-                <Button variant="container" onClick={props.onReload}>Reload</Button>
+                <Button variant="outlined" onClick={props.onReload}>Reload messages</Button>
                 <List>
                     {
                         messages.map((message) => {
-                            return <ListItemText key={message._id} primary={message.content} />
+                            return <ListItemText key={message._id} primary={message.content} secondary={message.author}/>
                         })
                     }
                 </List>
@@ -59,8 +61,8 @@ const Chat = (props) => {
                 }}
             >
                 <Container maxWidth="sm">
-                    <TextField id="outlined-basic" value={outMessage} label="Outlined" variant="outlined" onChange={(e) => setOutMessage(e.target.value)} />
-                    <Button variant="contained" onClick={() => sendMessage(outMessage)}>Send</Button>
+                    <TextField id="outlined-basic" value={outMessage} label="Write message" variant="outlined" onChange={(e) => setOutMessage(e.target.value)} />
+                    <Button style={{marginLeft: 1 + 'em', padding: 1 + 'em'}} variant="contained" onClick={() => sendMessage(outMessage)}>Send</Button>
                 </Container>
             </Box>
         </Box>

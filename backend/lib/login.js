@@ -12,11 +12,11 @@ router.post('/', async (req, res) => {
     const match = await bcrypt.compare(authInfo.password, user.password);
     console.log('Match:', match);
     if (match) {
-        const token = jwt.sign({ userName: user.userName }, process.env.JWTPRIVATEKEY || 'secret', { expiresIn: '1h' });
+        const token = jwt.sign({ userName: user.userName }, process.env.JWTPRIVATEKEY || 'secret', { expiresIn: '60s' });
         console.log('Token:', token);
         res.send(token);
     } else {
-        res.status(400).send({ error: 'login failed' });
+        res.status(401).send({ error: 'login failed' });
     }
 });
 
