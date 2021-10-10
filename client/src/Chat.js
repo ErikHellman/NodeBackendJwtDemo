@@ -1,22 +1,13 @@
 import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 
-const buildMessageList = (messages) => {
-    return messages.map((message) => {
-        return <ListItemText key={message._id} primary={message.content} />
-    });
-}
-
-
-export default (props) => {
+const Chat = (props) => {
     const [messages, setMessages] = React.useState([])
     const [outMessage, setOutMessage] = React.useState('');
 
@@ -58,11 +49,11 @@ export default (props) => {
         >
             <CssBaseline />
             <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
-                <Button variant="container" onClick={fetchMessages}>Reload</Button>
+                <Button variant="outlined" onClick={fetchMessages}>Reload</Button>
                 <List>
                     {
                         messages.map((message) => {
-                            return <ListItemText key={message._id} primary={message.content} />
+                            return <ListItemText key={message._id} primary={message.content} secondary={message.author}/>
                         })
                     }
                 </List>
@@ -80,11 +71,12 @@ export default (props) => {
                 }}
             >
                 <Container maxWidth="sm">
-                    <TextField id="outlined-basic" value={outMessage} label="Outlined" variant="outlined" onChange={(e) => setOutMessage(e.target.value)} />
-                    <Button variant="contained" onClick={() => sendMessage(outMessage)}>Send</Button>
+                    <TextField id="outlined-basic" value={outMessage} label="New message" variant="outlined" onChange={(e) => setOutMessage(e.target.value)} />
+                    <Button variant="contained" style={{marginLeft:'1em', padding:'1em'}} onClick={() => sendMessage(outMessage)}>Send</Button>
                 </Container>
             </Box>
         </Box>
     );
-
 }
+
+export default Chat
